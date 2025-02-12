@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer with Alarm</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        input {
+            margin: 10px;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Timer with Alarm</h1>
+    
+    <!-- Input fields for timer durations -->
+    <input type="number" id="time1" placeholder="Enter time in minutes (1)"> minutes
+    <input type="number" id="time2" placeholder="Enter time in minutes (2)"> minutes
+    <button onclick="startTimer()">Start Timer</button>
+    <button onclick="stopTimer()">Stop Timer</button>
+    
+    <p id="timerDisplay">Time Remaining: 0:00</p>
+    <p id="status">Timer is off.</p>
+    
+    <!-- Audio element for alarm sound -->
+    <audio id="alarmSound">
+        <source src="mixkit-digital-clock-digital-alarm-buzzer-992 (1).wav" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        let timer;
+        let totalTime1, totalTime2;
+        let timeLeft1, timeLeft2;
+        let timerRunning = false;
+        const alarmSound = document.getElementById('alarmSound');
+        let isFirstTimeoutDone = false;
+        let isSecondTimeoutDone = false;
+
+        // Start the timer
+        function startTimer() {
+            if (timerRunning) return;
+
+            // Get input values
+            const time1 = parseFloat(document.getElementById('time1').value);
+            const time2 = parseFloat(document.getElementById('time2').value);
+
+            // Check if the time is provided
+            if (isNaN(time1) || isNaN(time2) || time1 <= 0 || time2 <= 0) {
+                alert("Please enter valid time values greater than 0.");
+                return;
+            }
+
+            totalTime1 = time1 * 60;  // Convert minutes to seconds
+            totalTime2 = time2 * 60;  // Convert minutes to seconds
+            
+            timeLeft1 = totalTime1;
+            timeLeft2 = totalTime2;
+            isFirstTimeoutDone = false;
+            isSecondTimeoutDone = false;
+            timerRunning = true;
+
+            // Update status
+            document.getElementById('status').innerText = 'Timer is running...';
+            runTimer();
+        }
+
+        // Run the timer
+        function runTimer() {
+            timer = setInterval(function() {
+                if (timeLeft1 > 0) {
+                    timeLeft1--;
+                    updateDisplay(timeLeft1);
+                } else if (timeLeft2 > 0) {
+                    timeLeft2--;
+                    updateDisplay(timeLeft2);
+                } else {
+                    // Keep the timer running after both timeouts
+                    document.getElementById('status').innerText = 'Timer is off.';
+                    return;
+                }
+
+                // Play alarm when the first timer is up
+                if (timeLeft1 === 0 && !isFirstTimeoutDone) {
+                    playAlarm();
+                    isFirstTimeoutDone = true;
+                }
+
+                // Play alarm when the second timer is up
+                if (timeLeft2 === 0 && !isSecondTimeoutDone) {
+                    playAlarm();
+                    isSecondTimeoutDone = true;
+                }
+
+            }, 1000);  // Run every 1 second
+        }
+
+        // Stop the timer and reset
+        function stopTimer() {
+            clearInterval(timer);
+            timerRunning = false;
+            document.getElementById('status').innerText = 'Timer is off.';
+            document.getElementById('timerDisplay').innerText = 'Time Remaining: 0:00';
+            alarmSound.pause(); // Stop the sound if playing
+            alarmSound.currentTime = 0; // Reset sound position to start
+        }
+
+        // Update the timer display
+        function updateDisplay(time) {
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            document.getElementById('timerDisplay').innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
+
+        // Play the alarm sound and keep it running for 5 seconds after both timeouts
+        function playAlarm() {
+            if (alarmSound) {
+                alarmSound.currentTime = 0;  // Reset sound to the beginning
+                alarmSound.play();  // Play sound
+                setTimeout(() => {
+                    alarmSound.pause(); // Stop the sound after 5 seconds
+                    alarmSound.currentTime = 0; // Reset the sound position
+                }, 5000); // 5 seconds
+            } else {
+                console.log("Alarm sound element not found!"); // Debugging log
+            }
+        }
+    </script>
+
+</body>
+</html>
